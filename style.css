@@ -43,6 +43,8 @@
   --invert-accent: #e1bb91;
   --invert-border: #2e2a24;
   --focus: #2e2a24;          /* näppäimistöfokuksen reunus */
+  --shadow: rgb(46 42 36 / 0.25);    /* popover-valikon varjo */
+  --backdrop: rgb(46 42 36 / 0.2);   /* sivu valikon takana */
 
   /* Fontit: kaksi järjestelmäfonttia, ei latausta */
   --font-heading: Georgia, "Times New Roman", serif;
@@ -89,6 +91,8 @@
     --invert-accent: #e8b27a;
     --invert-border: #5a4b3c;
     --focus: #f1e9dd;
+    --shadow: rgb(0 0 0 / 0.6);
+    --backdrop: rgb(0 0 0 / 0.45);
   }
 }
 
@@ -373,6 +377,12 @@ p {
   color: var(--invert-bg);
 }
 
+/* Toissijainen painike: vain reunus (Järjestys, Tyhjennä lomake) */
+.button.secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
 .section {
   padding: var(--space-xl) 0;
 }
@@ -548,6 +558,12 @@ p {
   font-size: 0.9375rem;
 }
 
+.arrived {
+  margin-bottom: var(--space-s);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
 .animal-card .text-link {
   align-self: flex-start;
   margin-top: var(--space-s);
@@ -610,7 +626,64 @@ p {
   outline-offset: 4px;
 }
 
-/* Tulosten määrä ("3 kotia odottavaa…") */
+/* Järjestysvalikko: painike avaa popoverin (HTML:n popover-attribuutti).
+   Selain hoitaa avaamisen, Escin, ulkopuolelle klikkaamisen ja fokuksen. */
+.sort {
+  margin-bottom: var(--space-m);
+}
+
+/* Painikkeen tekstit samankokoisina (.button span on nuolta varten isompi) */
+.sort-toggle span {
+  font-size: inherit;
+}
+
+.sort-menu {
+  width: min(20rem, 100vw - 2rem);
+  padding: var(--space-m);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 0.5rem 1.5rem var(--shadow);
+}
+
+.sort-menu::backdrop {
+  background: var(--backdrop);
+}
+
+.sort-title {
+  margin: 0 0 var(--space-s);
+  font-weight: bold;
+}
+
+.sort-menu ul {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sort-menu button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.625rem var(--space-m);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Valittu järjestys, sama tapa kuin luennon suodatinpainikkeissa */
+.sort-menu button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: bold;
+}
+
+/* Tilarivi: "Näytetään 3 / 3 kotia odottavaa eläintä…" */
 .listing-section [role="status"] {
   color: var(--muted);
   font-size: 0.9375rem;
@@ -769,6 +842,23 @@ form fieldset {
   margin: var(--space-xs) 0 var(--space-m);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Tarkistus- ja tyhjennyspainike rinnakkain, kapealla allekkain */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+}
+
+/* Kertoo palautetusta tai tyhjennetystä kyselystä (localStorage) */
+.draft-status {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.draft-status:empty {
+  margin: 0;
 }
 
 /* Virheyhteenveto ja valmis kysely saavat fokuksen JavaScriptillä */
@@ -938,6 +1028,10 @@ form fieldset {
     border-color: var(--accent-hover);
     background: var(--accent-hover);
     color: var(--on-accent);
+  }
+
+  .sort-menu button:hover {
+    border-color: var(--accent);
   }
 }
 
