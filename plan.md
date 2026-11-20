@@ -25,11 +25,15 @@ Toimeksiannosta nousee neljä varsinaista ongelmaa:
 
 **Suodatus yhdellä silmäyksellä.** Listasivulla on neljä valintaa: Kaikki, Kissat, Koirat ja Muut. Ne näkyvät kerralla, eikä niitä tarvitse etsiä pudotusvalikosta. Lista päivittyy heti, ja sivu kertoo, montako eläintä näkyy. Jos jossakin ryhmässä ei ole eläimiä, sivu sanoo sen ja neuvoo kokeilemaan toista lajia.
 
-**Adoptoidut katoavat itsestään.** Eläinten tiedot ovat yhdessä tiedostossa (animals.js). Kun eläin adoptoidaan, vapaaehtoinen vaihtaa sen tilaksi "adopted", ja eläin poistuu sekä listalta että lomakkeen eläinvalikosta. Näin kukaan ei kysy jo kodin saaneesta eläimestä.
+**Pisimpään odottaneet ensin.** Eläinlistan voi järjestää Järjestys-valikosta joko odotusajan tai nimen mukaan. Oletuksena ensin näytetään eläimet, jotka ovat odottaneet kotia pisimpään, koska niiden kodin löytyminen on yhdistykselle tärkeintä. Myös etusivu näyttää samassa järjestyksessä kolme kauimmin odottanutta. Valikko on HTML:n popover: se avautuu painikkeesta, toimii näppäimistöllä ja sulkeutuu Escillä.
+
+**Adoptoidut katoavat itsestään.** Eläinten tiedot ovat yhdessä paikassa, app.js-tiedoston alussa. Kun eläin adoptoidaan, vapaaehtoinen vaihtaa sen tilaksi "adopted", ja eläin poistuu sekä listalta että lomakkeen eläinvalikosta. Näin kukaan ei kysy jo kodin saaneesta eläimestä.
 
 **Adoptio näkyväksi ja turvalliseksi.** Tietoa meistä -sivulla adoptio on jaettu neljään vaiheeseen: tutustu eläimeen, lähetä adoptiokysely, tavataan ja jutellaan sekä yhteisen arjen alku. Sivu muistuttaa myös ajasta, kodista ja kuluista, jotta päätös tehdään harkiten. Sama viesti toistuu etusivulla, adoption vaiheissa ja lomakkeella: kysely ei sido adoptioon. Jokaisesta eläinkortista pääsee suoraan lomakkeelle niin, että eläin on jo valmiiksi valittuna.
 
 **Lomake, joka ei jätä arvailemaan.** Lomake tarkistaa pakolliset kentät, sähköpostiosoitteen muodon ja viestin vähimmäispituuden. Virheet kootaan lomakkeen alkuun linkkeinä, ja jokaisen kentän alla kerrotaan, mitä pitää korjata. Kun tiedot ovat kunnossa, sivu näyttää yhteenvedon ja kertoo selvästi, että kysely on valmis mutta sitä ei ole vielä lähetetty. Tämä on tärkeää, koska sähköpostiyhteys tulee IT-kumppanilta vasta myöhemmin: kävijä ei saa jäädä odottamaan vastausta viestiin, jota kukaan ei saanut.
+
+**Kesken jäänyt kysely ei katoa.** Kodin kuvaaminen vie aikaa, ja kävijä voi joutua keskeyttämään. Lomake tallentaa kirjoitetun tekstin selaimen localStorageen, joten se on tallessa, kun kävijä palaa sivulle. Tiedot eivät lähde mihinkään palvelimelle, ja sivu kertoo tallennuksesta selvästi. Tyhjennä lomake -painike poistaa tallennetut tiedot, mikä on tärkeää esimerkiksi yhteiskäyttöisellä koneella.
 
 ## 4. Sivukartta
 
@@ -76,4 +80,4 @@ Sivusto julkaistaan GitHub Pagesissa, ja muutokset tallennetaan Gitiin omina com
 
 - IT-kumppani kytkee lomakkeen yhdistyksen sähköpostiin. Lomakkeen kentät ja yhteenveto ovat jo valmiina, joten käyttöliittymään ei tarvita suuria muutoksia.
 - Esimerkkieläimet ja kuvituskuvat vaihdetaan oikeisiin eläimiin ja yhdistyksen omiin valokuviin.
-- Jos eläimiä tai päivittäjiä on myöhemmin paljon, animals.js-tiedoston muokkaaminen voidaan korvata helpommalla ylläpitotavalla.
+- Jos eläimiä tai päivittäjiä on myöhemmin paljon, app.js-tiedoston eläintietojen muokkaaminen voidaan korvata helpommalla ylläpitotavalla.
