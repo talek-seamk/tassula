@@ -44,7 +44,6 @@
   --invert-border: #2e2a24;
   --focus: #2e2a24;          /* näppäimistöfokuksen reunus */
   --shadow: rgb(46 42 36 / 0.25);    /* popover-valikon varjo */
-  --backdrop: rgb(46 42 36 / 0.2);   /* sivu valikon takana */
 
   /* Fontit: kaksi järjestelmäfonttia, ei latausta */
   --font-heading: Georgia, "Times New Roman", serif;
@@ -92,7 +91,6 @@
     --invert-border: #5a4b3c;
     --focus: #f1e9dd;
     --shadow: rgb(0 0 0 / 0.6);
-    --backdrop: rgb(0 0 0 / 0.45);
   }
 }
 
@@ -627,9 +625,18 @@ p {
 }
 
 /* Järjestysvalikko: painike avaa popoverin (HTML:n popover-attribuutti).
-   Selain hoitaa avaamisen, Escin, ulkopuolelle klikkaamisen ja fokuksen. */
+   Selain hoitaa avaamisen, Escin, ulkopuolelle klikkaamisen ja fokuksen.
+   Popoverille ei anneta displayta: se kumoaisi selaimen piilotuksen. */
 .sort {
   margin-bottom: var(--space-m);
+}
+
+/* Ankkuri, jonka alle valikko sijoitetaan.
+   inline-block: teksti rivittyy kapealla näytöllä tavallisena tekstinä. */
+.sort-toggle {
+  display: inline-block;
+  text-align: left;
+  anchor-name: --sort;
 }
 
 /* Painikkeen tekstit samankokoisina (.button span on nuolta varten isompi) */
@@ -638,6 +645,14 @@ p {
 }
 
 .sort-menu {
+  /* Ankkurisijoittelu: painikkeen alle, tasattuna sen vasempaan reunaan.
+     Jos alla ei ole tilaa, valikko kääntyy painikkeen yläpuolelle.
+     Vanhemmassa selaimessa valikko avautuu keskelle ja toimii silti. */
+  position-anchor: --sort;
+  position-area: bottom span-right;
+  position-try-fallbacks: flip-block;
+  inset: auto;
+  margin: var(--space-xs) 0 0;
   width: min(20rem, 100vw - 2rem);
   padding: var(--space-m);
   border: 1px solid var(--line);
@@ -645,10 +660,6 @@ p {
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 0.5rem 1.5rem var(--shadow);
-}
-
-.sort-menu::backdrop {
-  background: var(--backdrop);
 }
 
 .sort-title {
@@ -849,6 +860,20 @@ form fieldset {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-m);
+}
+
+/* "Kysely on valmis" -tilarivi lomakkeen alla (role="status") */
+.form-status:not(:empty) {
+  margin: var(--space-l) 0;
+  padding: var(--space-m) var(--space-l);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-weight: bold;
+}
+
+.form-status:empty {
+  margin: 0;
 }
 
 /* Kertoo palautetusta tai tyhjennetystä kyselystä (localStorage) */

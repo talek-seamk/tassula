@@ -8,7 +8,7 @@
 // 2. Apufunktiot
 // 3. Etusivu: kolme kotia odottavaa eläintä
 // 4. Eläinsivu: lajisuodatin, järjestysvalikko (popover) ja tilarivi
-// 5. Yhteystiedot: adoptiokysely, tarkistus ja tallennus selaimeen
+// 5. Yhteystiedot: adoptiokysely, tarkistus, valmis-ilmoitus ja tallennus selaimeen
 //
 // Jokainen osa tarkistaa ensin, onko sen elementti tällä sivulla.
 // Jos ei ole, osa ei tee mitään.
@@ -281,7 +281,12 @@ function setupForm() {
   const errorBox = document.querySelector('#error-summary');
   const errorList = errorBox.querySelector('ul');
   const success = document.querySelector('#success');
+  const formStatus = document.querySelector('#form-status');
   const draftStatus = document.querySelector('#draft-status');
+
+  // Selaimen omat virhekuplat pois, mutta vain kun JavaScript on käynnissä.
+  // Omat virheilmoitukset kertovat kaikki ongelmat kerralla ja suomeksi.
+  form.noValidate = true;
 
   // Eläinvalikkoon vain kotia odottavat eläimet.
   for (const animal of available) {
@@ -291,10 +296,12 @@ function setupForm() {
   }
 
   // Palauta keskeneräinen kysely, jos sellainen on tallennettu.
+  // form.elements[name] löytää kentän sen name-attribuutin perusteella.
   const draft = loadDraft();
   if (draft) {
-    for (const field of fields) {
-      if (typeof draft[field.id] === 'string') field.value = draft[field.id];
+    for (const [name, value] of Object.entries(draft)) {
+      const field = form.elements[name];
+      if (field && typeof value === 'string') field.value = value;
     }
     // Jos tallennettu eläin on ehditty adoptoida, sitä ei voi enää valita.
     if (select.value !== draft.animal) select.value = '';
@@ -308,44 +315,66 @@ function setupForm() {
   // Lomake on HTML:ssä pois käytöstä, kunnes JavaScript on ladattu.
   document.querySelector('#form-fields').disabled = false;
 
-  // Tallenna jokaisen muutoksen jälkeen, ettei kirjoitettu katoa.
-  form.addEventListener('input', () => {
-    const data = {};
-    for (const field of fields) data[field.id] = field.value;
+  // Näytä virhe kentän alla ja merkitse kenttä virheelliseksi.
+  // aria-describedby (HTML:ssä) kytkee virhetekstin kenttään ruudunlukijalle.
+  function showError(field, message) {
+    const hint = document.getElementById(`${field.id}-error`);
+    hint.textContent = message;
+    hint.hidden = false;
+    field.setAttribute('aria-invalid', 'true');
+  }
 
-    const hasText = fields.some((field) => field.value.trim() !== '');
+  // Poista kentän virhe, myös virheyhteenvedosta.
+  function clearError(field) {
+    const hint = document.getElementById(`${field.id}-error`);
+    hint.textContent = '';
+    hint.hidden = true;
+    field.removeAttribute('aria-invalid');
+    errorList.querySelector(`a[href="#${field.id}"]`)?.parentElement.remove();
+    if (errorList.children.length === 0) errorBox.hidden = true;
+  }
+
+  // Valmis-ilmoitus ja yhteenveto pois, kun lomaketta muutetaan.
+  function hideReady() {
+    success.hidden = true;
+    formStatus.textContent = '';
+  }
+
+  // Yksi input-kuuntelija koko lomakkeelle (delegointi), kaksi tehtävää:
+  // 1) poista virhe heti, kun kenttä on korjattu (uusia virheitä ei näytetä kesken kirjoittamisen)
+  // 2) tallenna luonnos selaimeen, ettei kirjoitettu katoa
+  form.addEventListener('input', (event) => {
+    const field = event.target;
+    if (field.getAttribute('aria-invalid') === 'true' && errorFor(field) === '') {
+      clearError(field);
+    }
+    if (!success.hidden) hideReady();
+
+    const data = Object.fromEntries(new FormData(form));
+    const hasText = Object.values(data).some((value) => value.trim() !== '');
     if (hasText) saveDraft(data);
     else clearDraft();
   });
 
-  function clearErrors() {
-    errorList.replaceChildren();
-    errorBox.hidden = true;
-    for (const field of fields) {
-      field.removeAttribute('aria-invalid');
-      document.getElementById(`${field.id}-error`).hidden = true;
-    }
-  }
-
-  // Tarkista ja näytä valmis kysely. Mitään ei lähetetä.
+  // Tarkista kaikki kentät. Mitään ei lähetetä mihinkään.
   form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    clearErrors();
+    event.preventDefault();   // älä lähetä, älä lataa sivua uudelleen
+    hideReady();
+    errorList.replaceChildren();
 
-    const invalid = [];
+    let firstInvalid = null;
     for (const field of fields) {
       field.value = field.value.trim();
-      const error = errorFor(field);
-      const hint = document.getElementById(`${field.id}-error`);
-      hint.textContent = error;
-      hint.hidden = !error;
-      if (!error) continue;
-
-      field.setAttribute('aria-invalid', 'true');
-      invalid.push(field);
+      const message = errorFor(field);
+      if (!message) {
+        clearError(field);
+        continue;
+      }
+      showError(field, message);
+      firstInvalid ??= field;
 
       // Virheyhteenvedon linkki vie suoraan virheelliseen kenttään.
-      const link = make('a', error);
+      const link = make('a', message);
       link.href = `#${field.id}`;
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -356,37 +385,33 @@ function setupForm() {
       errorList.append(item);
     }
 
-    if (invalid.length > 0) {
+    if (firstInvalid) {
       errorBox.hidden = false;
-      errorBox.focus();
+      firstInvalid.focus();   // fokus ensimmäiseen virheelliseen kenttään
       return;
     }
 
+    // Kaikki kunnossa: näytä yhteenveto ja kerro tilarivillä, että kysely on valmis.
+    // Tilarivillä on role="status", joten ruudunlukija lukee sen ääneen.
+    const data = Object.fromEntries(new FormData(form));
+    const animalText = select.options[select.selectedIndex].text;
     const summary = document.querySelector('#summary-data');
-    summary.replaceChildren();
-    const labels = ['Nimi', 'Sähköposti', 'Kiinnostava eläin', 'Koti ja arki'];
-    fields.forEach((field, i) => {
-      const value = field === select ? select.options[select.selectedIndex].text : field.value;
-      summary.append(make('dt', labels[i]), make('dd', value));
-    });
-
-    form.hidden = true;
+    summary.replaceChildren(
+      make('dt', 'Nimi'), make('dd', data.name),
+      make('dt', 'Sähköposti'), make('dd', data.email),
+      make('dt', 'Kiinnostava eläin'), make('dd', animalText),
+      make('dt', 'Koti ja arki'), make('dd', data.message),
+    );
     success.hidden = false;
-    success.focus();
-  });
-
-  // Takaisin muokkaamaan: tiedot ovat yhä lomakkeella.
-  document.querySelector('#edit-query').addEventListener('click', () => {
-    success.hidden = true;
-    form.hidden = false;
-    fields[0].focus();
+    formStatus.textContent = `Kiitos, ${data.name}! Adoptiokyselysi on valmis, ja sen yhteenveto on alla. Kyselyä ei ole vielä välitetty Tassulalle.`;
   });
 
   // Tyhjennä lomake ja selaimeen tallennettu kysely.
   document.querySelector('#clear-form').addEventListener('click', () => {
     clearDraft();
     form.reset();
-    clearErrors();
+    for (const field of fields) clearError(field);
+    hideReady();
     draftStatus.textContent = 'Lomake tyhjennetty. Tähän selaimeen ei ole enää tallennettu kyselyä.';
     fields[0].focus();
   });
