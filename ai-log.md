@@ -60,3 +60,43 @@ Hyvät pohjat ja sain ymärrettyä myös Clauden kautta miten tuo moodboard toim
 **Mitä jouduin tekemään itse:**
 
 En muuttanut style.css:ää. Kävin sen läpi ja ymmärrän rakenteen: värit, fontit ja välit ovat :rootissa, asettelu on tehty mobiili ensin ja tumma tila vaihtaa vain värit. Jouduin toki korjaamaan, että style.css toimisi, koska jostain syystä se ei latautunut sivuilla, clauden tekemän kirjoitus virheen takia.
+
+## 5. E3: JavaScript, järjestysvalikko ja tallennus selaimeen (Claude, 19.11.2026)
+
+**Mitä yritin saada tekoälyn tekemään:** Annoin Claudelle luennon 5 kalvot, kahvilaharjoituksen pohjan (js-base-1) ja zipin reposta. Kysyin, pitääkö sivustoa muokata E3:a varten, ja pyysin tekemään tarvittavat muutokset.
+
+**Mitä sain:**
+
+- **Yksi JavaScript-tiedosto.** Claude huomasi, että sivut latasivat kaksi JavaScript-tiedostoa (animals.js ja app.js), vaikka E3 vaatii yhden. Eläintiedot siirrettiin app.js:n alkuun, ja animals.js poistettiin.
+- **Luettava app.js.** Ennen koodi oli tiivistetty muutamaksi pitkäksi riviksi. Nyt se on kommentoitu ja jaettu osiin: data, apufunktiot ja oma funktio jokaiselle sivulle.
+- **Järjestysvalikko.** Eläinsivulle tuli HTML:n popover (`popovertarget`), josta valitaan järjestys: pisimpään odottaneet ensin tai nimen mukaan. Valinta kuunnellaan yhdellä kuuntelijalla koko valikossa (delegointi), ja valittu vaihtoehto merkitään `aria-pressed`-attribuutilla kuten luennon suodatinpainikkeissa. Eläimille lisättiin esimerkkitulopäivä, ja kortissa lukee esimerkiksi "Saapui Tassulaan elokuussa 2026".
+- **Tilarivi.** Rivi on nyt muotoa "Näytetään 1 / 3 kotia odottavaa eläintä, nimen mukaan (A–Ö)."
+- **Tallennus selaimeen.** Lomake tallentaa keskeneräisen kyselyn localStorageen ja palauttaa sen, kun sivun avaa uudelleen. Lomakkeeseen tuli Tyhjennä lomake -painike, ja sivu kertoo, että tiedot ovat vain tässä selaimessa. Tallennus on try…catchin sisällä, joten lomake toimii, vaikka selain estäisi tallennuksen.
+- **Ei onclick-attribuutteja.** Kaikki tapahtumat on kytketty `addEventListener`illä.
+- **Tarkistukset.** Claude testasi selaimessa:
+  - Joka sivulla on yksi app.js deferillä, eikä konsolissa ole virheitä.
+  - Popover avautuu Enterillä ja sulkeutuu Escillä, ja fokus palaa Järjestys-painikkeeseen.
+  - Suodatin toimii nuolinäppäimillä.
+  - Tallennus säilyy sivun uudelleenlatauksen yli, ja tyhjennys poistaa sen.
+  - E1- ja E2-tarkistukset (320 px, tumma tila, kontrastit, fokus) menivät yhä läpi.
+
+**Mitä Claude ei voinut tehdä:** Se ei nähnyt luennon 6 kalvoja, joissa lomakkeet, tallennus ja popoverit käydään läpi, joten toteutus on tehty yleisillä HTML:n ja JavaScriptin keinoilla. W3C-validaattoria se ei saanut ajettua, eikä se voinut testata ruudunlukijalla tai omalla puhelimellani.
+
+**Mitä jouduin tekemään itse:**
+
+Purin muutokset repoon, poistin animals.js:n komennolla `git rm animals.js` ja pushasin koodin 19.11.
+Pushin jälkeen sivu näytti rikkinäiseltä, eikä eläimiä näkynyt. Syy oli selaimen välimuisti: selain käytti vanhaa app.js:ää, joka etsi poistettua animals.js-tiedostoa. Ctrl+Shift+R latasi sivun ohi välimuistin, ja eläimet näkyivät taas.
+Luin app.js:n läpi 20.11.
+
+**Luennon 6 jälkeen (20.11.):** Annoin Claudelle luennon 6 kalvot ja js-base-2-pohjan. Claude vertasi toteutusta luennon E3-tarkistuslistaan ja muutti:
+
+- Fokus siirtyy virheyhteenvedon sijaan ensimmäiseen virheelliseen kenttään.
+- Lomakkeen alle tuli tilarivi (role="status"), joka kertoo, että kysely on valmis, ja ruudunlukija lukee sen ääneen. Lomake jää näkyviin, joten Muokkaa-painike poistettiin.
+- Virhe poistuu heti, kun kenttä korjataan. Sama input-kuuntelija hoitaa myös luonnoksen tallennuksen.
+- Selaimen virhekuplat otetaan pois JavaScriptillä (form.noValidate) eikä HTML:n novalidate-attribuutilla.
+- "Kyselyä ei ole lähetetty" muutettiin muotoon "Kyselyä ei ole vielä välitetty Tassulalle", koska tarkistuslista kieltää "lähetetty!"-ilmoitukset.
+- Järjestysvalikko sijoitetaan painikkeen alle ankkurisijoittelulla, kuten luennolla.
+- Luonnos säilyy myös valmiin kyselyn jälkeen, vaikka luennon esimerkki poistaa sen. Kyselyä ei vielä välitetä minnekään, joten tiedot säilyvät, kunnes käyttäjä tyhjentää lomakkeen.
+- W3C-validaattori löysi 22.11. virheen: Clauden lisäämää aria-expanded-attribuuttia ei saa käyttää painikkeessa, jossa on popovertarget, koska selain kertoo valikon tilan itse. Poistin sen.
+- Sivusto toimi puhelimella, ei pystynyt vierittämään vaaka suunnassa. Tumma tila ja vaalea tila toimivat myös ja kaikki napit ovat mahdollista painaa. Lomake myös toimii samallalailla kuin tietokoneen selaimellakin.
+
