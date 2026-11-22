@@ -164,7 +164,6 @@ function setupListing() {
   const filters = document.querySelector('#filters');
   const sortBox = document.querySelector('#sort');
   const sortMenu = document.querySelector('#sort-menu');
-  const sortToggle = document.querySelector('.sort-toggle');
   const sortLabel = document.querySelector('#sort-label');
   const status = document.querySelector('#result-count');
   const emptyState = document.querySelector('#empty-state');
@@ -200,11 +199,6 @@ function setupListing() {
     sortLabel.textContent = sortOptions[sortBy].label;
     sortMenu.hidePopover();   // sulkee valikon, fokus palaa Järjestys-painikkeeseen
     update();
-  });
-
-  // Kerro ruudunlukijalle, onko valikko auki (aria-expanded).
-  sortMenu.addEventListener('toggle', (event) => {
-    sortToggle.setAttribute('aria-expanded', String(event.newState === 'open'));
   });
 
   // Suodatin ja järjestys näytetään vasta, kun JavaScript toimii.
